@@ -1,0 +1,952 @@
+<title>Atlas de Lotes Cundinamarca</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+  :root{
+    --paper:#FFFFFF;
+    --paper-raised:#FFFFFF;
+    --paper-sunken:#F2F1F4;
+    --ink:#000000;
+    --ink-muted:#5B5B60;
+    --ink-faint:#8C8C91;
+    --line:#DEDDE1;
+    --line-strong:#BCBCBC;
+    --accent:#A738EA;
+    --accent-soft:#F1E4FB;
+    --accent-ink:#7C1FBD;
+    --gold:#FED353;
+    --gold-soft:#FFF6DC;
+    --gold-ink:#8A6A12;
+    --good:#3A7D44; --good-soft:#DFF0DF; --good-ink:#2A5E33;
+    --warning:#C07C1F; --warning-soft:#F5E6C8; --warning-ink:#8A5A14;
+    --critical:#B0472F; --critical-soft:#F5DCD3; --critical-ink:#8C3520;
+    --info:#3B6EA5; --info-soft:#DCE7F2; --info-ink:#2C517D;
+    --shadow:rgba(0,0,0,0.14);
+    --focus:#7C1FBD;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#0E0E10;
+      --paper-raised:#19191C;
+      --paper-sunken:#141416;
+      --ink:#FFFFFF;
+      --ink-muted:#B9B9BE;
+      --ink-faint:#86868C;
+      --line:#2C2C30;
+      --line-strong:#3E3E44;
+      --accent:#C86BF2;
+      --accent-soft:#2E1F42;
+      --accent-ink:#D9A6F5;
+      --gold:#FED353;
+      --gold-soft:#3A2E10;
+      --gold-ink:#FED353;
+      --good:#5FBF6E; --good-soft:#1C3220; --good-ink:#8FE39C;
+      --warning:#E0A83E; --warning-soft:#3A2E12; --warning-ink:#F0C46B;
+      --critical:#E2795F; --critical-soft:#3A2019; --critical-ink:#F0A088;
+      --info:#6FA8DC; --info-soft:#182A38; --info-ink:#9CC6EA;
+      --shadow:rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0E0E10;
+    --paper-raised:#19191C;
+    --paper-sunken:#141416;
+    --ink:#FFFFFF;
+    --ink-muted:#B9B9BE;
+    --ink-faint:#86868C;
+    --line:#2C2C30;
+    --line-strong:#3E3E44;
+    --accent:#C86BF2;
+    --accent-soft:#2E1F42;
+    --accent-ink:#D9A6F5;
+    --gold:#FED353;
+    --gold-soft:#3A2E10;
+    --gold-ink:#FED353;
+    --good:#5FBF6E; --good-soft:#1C3220; --good-ink:#8FE39C;
+    --warning:#E0A83E; --warning-soft:#3A2E12; --warning-ink:#F0C46B;
+    --critical:#E2795F; --critical-soft:#3A2019; --critical-ink:#F0A088;
+    --info:#6FA8DC; --info-soft:#182A38; --info-ink:#9CC6EA;
+    --shadow:rgba(0,0,0,0.5);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{
+    max-width:1400px;
+    margin:0 auto;
+    padding:22px 20px 60px;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+  }
+  h1,h2,h3{font-family:'Quicksand', system-ui, sans-serif; text-wrap:balance; margin:0;}
+  .num{font-family:'IBM Plex Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums;}
+
+  /* ---------- header ---------- */
+  header.top{display:flex; flex-direction:column; gap:14px;}
+  .brandmark{display:flex; align-items:baseline; gap:10px;}
+  .bm-word{font-family:'Quicksand', system-ui, sans-serif; font-weight:700; font-size:21px; letter-spacing:-.01em; color:var(--ink); text-transform:lowercase;}
+  .bm-e{color:var(--accent);}
+  .bm-sub{font-family:'IBM Plex Sans', sans-serif; font-size:10px; font-weight:600; letter-spacing:.28em; color:var(--ink-muted); text-transform:uppercase;}
+  .eyebrow{
+    font-size:12px; text-transform:uppercase; letter-spacing:.09em;
+    color:var(--accent-ink); font-weight:600;
+  }
+  h1{font-size:32px; font-weight:600; line-height:1.1; color:var(--ink);}
+  .subtitle{color:var(--ink-muted); font-size:14.5px; max-width:64ch; line-height:1.5;}
+  .subtitle b{color:var(--ink); font-weight:600;}
+
+  /* ---------- layout ---------- */
+  .layout{
+    display:grid;
+    grid-template-columns:250px 1fr 300px;
+    gap:18px;
+    align-items:start;
+  }
+  @media (max-width: 1020px){
+    .layout{grid-template-columns:1fr;}
+  }
+
+  .panel{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:12px;
+  }
+
+  /* ---------- filters ---------- */
+  #filters{padding:16px; display:flex; flex-direction:column; gap:16px; position:sticky; top:14px;}
+  @media (max-width:1020px){ #filters{position:static;} }
+  .f-group{display:flex; flex-direction:column; gap:8px;}
+  .f-title{font-size:11.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-muted); font-weight:600;}
+  input[type="text"], input[type="number"]{
+    font-family:inherit; font-size:13.5px; color:var(--ink);
+    background:var(--paper); border:1px solid var(--line-strong); border-radius:7px;
+    padding:7px 9px; width:100%;
+  }
+  input[type="text"]:focus, input[type="number"]:focus, button:focus-visible, .chk:focus-within, summary:focus-visible{
+    outline:2px solid var(--focus); outline-offset:1px;
+  }
+  .range-row{display:flex; gap:7px; align-items:center;}
+  .range-row input{width:50%;}
+  .hint{font-size:11.5px; color:var(--ink-faint); line-height:1.4;}
+  .chk{display:flex; align-items:center; gap:7px; font-size:13px; cursor:pointer; padding:2px 0;}
+  .chk input{accent-color:var(--accent); width:14px; height:14px;}
+  .swatch{width:9px; height:9px; border-radius:50%; flex:none; border:1px solid var(--line-strong);}
+  .muni-list{max-height:220px; overflow-y:auto; display:flex; flex-direction:column; gap:1px; padding-right:4px;}
+  .muni-list .chk{justify-content:space-between;}
+  .muni-list .chk span.name{display:flex; align-items:center; gap:7px;}
+  .muni-list .chk span.count{color:var(--ink-faint); font-family:'IBM Plex Mono'; font-size:11.5px;}
+  .link-row{display:flex; gap:12px;}
+  .link-btn{background:none;border:none;color:var(--accent-ink);font-size:11.5px;font-weight:600;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px;}
+  #reset-filters{
+    margin-top:2px; font-family:inherit; font-size:12.5px; font-weight:600;
+    background:var(--paper-sunken); border:1px solid var(--line-strong); color:var(--ink);
+    border-radius:7px; padding:8px; cursor:pointer;
+  }
+  #reset-filters:hover{background:var(--line);}
+
+  details.mobile-filters{display:none;}
+  @media (max-width:1020px){
+    #filters{display:none;}
+    details.mobile-filters{display:block; background:var(--paper-raised); border:1px solid var(--line); border-radius:12px;}
+    details.mobile-filters[open] #filters{display:flex;}
+    details.mobile-filters summary{
+      list-style:none; cursor:pointer; padding:13px 16px; font-weight:600; font-size:14px;
+      display:flex; justify-content:space-between; align-items:center;
+    }
+    details.mobile-filters summary::-webkit-details-marker{display:none;}
+  }
+
+  /* ---------- main ---------- */
+  main{display:flex; flex-direction:column; gap:14px; min-width:0;}
+  .count-line{font-size:12.5px; color:var(--ink-muted);}
+  .count-line b{color:var(--ink); font-family:'IBM Plex Mono';}
+
+  /* ---------- map ---------- */
+  #map-view{display:flex; flex-direction:column; gap:12px;}
+  .map-box{
+    position:relative; background:var(--paper-sunken);
+    border:1px solid var(--line); border-radius:12px; overflow:hidden;
+  }
+  #map-leaflet{width:100%; height:560px; background:var(--paper-sunken);}
+  @media (max-width:640px){ #map-leaflet{height:420px;} }
+  .muni-label{
+    color:var(--ink-muted); font-family:'IBM Plex Sans'; font-size:10.5px; font-weight:600;
+    text-shadow:0 1px 2px var(--paper-raised), 0 -1px 2px var(--paper-raised), 1px 0 2px var(--paper-raised), -1px 0 2px var(--paper-raised);
+    white-space:nowrap; pointer-events:none;
+  }
+  .legend{
+    position:absolute; left:10px; bottom:10px; z-index:1000;
+    background:var(--paper-raised); border:1px solid var(--line); border-radius:9px;
+    padding:10px 12px; font-size:11.5px; color:var(--ink-muted);
+    display:flex; flex-direction:column; gap:5px;
+    box-shadow:0 2px 10px var(--shadow);
+    max-width:200px;
+  }
+  .legend .row{display:flex; align-items:center; gap:7px;}
+  .legend .dot{width:9px;height:9px;border-radius:50%;flex:none;}
+
+  .afinidad-info{
+    background:var(--paper-raised); border:1px solid var(--line); border-radius:12px;
+    padding:12px 14px; display:flex; flex-direction:column; gap:8px;
+  }
+  .afinidad-info .criteria{display:flex; flex-wrap:wrap; gap:6px;}
+  .afinidad-info .criteria .chip{
+    display:inline-flex; align-items:center; gap:5px; font-size:11.5px;
+    background:var(--paper-sunken); border:1px solid var(--line); border-radius:20px; padding:3px 9px;
+    color:var(--ink-muted);
+  }
+  .afinidad-info .criteria .chip b{color:var(--ink); font-family:'IBM Plex Mono';}
+
+  .tooltip{
+    position:fixed; pointer-events:none; z-index:2000;
+    background:var(--ink); color:var(--paper);
+    font-size:12px; padding:6px 9px; border-radius:6px; line-height:1.4;
+    box-shadow:0 4px 14px var(--shadow); max-width:220px; display:none;
+  }
+  :root[data-theme="dark"] .tooltip, @media (prefers-color-scheme:dark){ .tooltip{} }
+  .tooltip b{display:block; font-weight:600;}
+
+  /* ---------- cards list ---------- */
+  .cards{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+    gap:10px;
+  }
+  .card{
+    background:var(--paper-raised); border:1px solid var(--line); border-radius:10px;
+    padding:11px 12px; cursor:pointer; display:flex; flex-direction:column; gap:6px;
+    text-align:left; font-family:inherit; color:var(--ink);
+  }
+  .card:hover{border-color:var(--line-strong);}
+  .card.selected{border-color:var(--accent); box-shadow:0 0 0 1px var(--accent);}
+  .card.dim{opacity:.35;}
+  .card .top-row{display:flex; justify-content:space-between; align-items:flex-start; gap:6px;}
+  .card .place{font-weight:600; font-size:13.5px;}
+  .card .vereda{color:var(--ink-muted); font-size:11.5px;}
+  .card .price{font-family:'IBM Plex Mono'; font-weight:600; font-size:14px;}
+  .card .meta{display:flex; gap:8px; font-size:11.5px; color:var(--ink-muted); font-family:'IBM Plex Mono';}
+  .badge{
+    display:inline-flex; align-items:center; gap:4px; font-size:10.5px; font-weight:600;
+    padding:2px 7px; border-radius:20px; white-space:nowrap;
+  }
+  .badge.good{background:var(--good-soft); color:var(--good-ink);}
+  .badge.warning{background:var(--warning-soft); color:var(--warning-ink);}
+  .badge.unavailable{background:var(--paper-sunken); color:var(--ink-muted);}
+  .badge.critical{background:var(--critical-soft); color:var(--critical-ink);}
+  .badge.neutral{background:var(--paper-sunken); color:var(--ink-faint);}
+  .badge.activo{background:var(--info-soft); color:var(--info-ink);}
+  .badge.descartado{background:var(--paper-sunken); color:var(--ink-faint); text-decoration:line-through;}
+  .badge.fav{background:var(--gold-soft); color:var(--gold-ink);}
+
+  /* ---------- table ---------- */
+  .table-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:12px; background:var(--paper-raised);}
+  table{width:100%; border-collapse:collapse; font-size:13px; min-width:760px;}
+  thead th{
+    text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.05em;
+    color:var(--ink-muted); font-weight:600; padding:10px 12px; border-bottom:1px solid var(--line);
+    cursor:pointer; user-select:none; white-space:nowrap; position:sticky; top:0; background:var(--paper-raised);
+  }
+  thead th.num-col, td.num-col{text-align:right; font-family:'IBM Plex Mono';}
+  thead th .arrow{opacity:.5; margin-left:3px;}
+  tbody tr{border-bottom:1px solid var(--line); cursor:pointer;}
+  tbody tr:hover{background:var(--paper-sunken);}
+  tbody tr.selected{background:var(--accent-soft);}
+  tbody tr.dim{opacity:.35;}
+  tbody td{padding:9px 12px; vertical-align:top;}
+  td.place b{display:block; font-size:13px;}
+  td.place span{color:var(--ink-muted); font-size:11.5px;}
+
+  /* ---------- detail panel ---------- */
+  #detail{padding:16px; display:flex; flex-direction:column; gap:12px; position:sticky; top:14px; min-height:180px;}
+  @media (max-width:1020px){ #detail{position:static;} }
+  .detail-empty{color:var(--ink-faint); font-size:13px; line-height:1.5; padding:20px 4px;}
+  .detail-title{font-size:17px; font-weight:600; font-family:'Quicksand'; line-height:1.25;}
+  .detail-sub{color:var(--ink-muted); font-size:12.5px;}
+  .detail-price{font-family:'IBM Plex Mono'; font-size:23px; font-weight:600; color:var(--accent-ink);}
+  .detail-price small{font-family:'IBM Plex Sans'; font-weight:500; color:var(--ink-muted); font-size:12px;}
+  .detail-grid{display:grid; grid-template-columns:1fr 1fr; gap:9px;}
+  .detail-item{background:var(--paper-sunken); border-radius:8px; padding:8px 10px;}
+  .detail-item .l{font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-muted);}
+  .detail-item .v{font-family:'IBM Plex Mono'; font-size:14px; font-weight:600; margin-top:2px;}
+  .detail-flags{display:flex; flex-wrap:wrap; gap:6px;}
+  .crm-box{background:var(--accent-soft); border:1px solid var(--accent); border-radius:10px; padding:11px 12px; display:flex; flex-direction:column; gap:7px;}
+  .crm-box .f-title{color:var(--accent-ink); margin-bottom:1px;}
+  .crm-row{display:flex; align-items:center; gap:8px;}
+  .crm-row label{font-size:11.5px; color:var(--ink-muted); width:58px; flex:none;}
+  .crm-row input, .crm-row select{flex:1; min-width:0; font-family:inherit; font-size:13px; padding:6px 8px; border:1px solid var(--line-strong); border-radius:6px; background:var(--paper-raised); color:var(--ink);}
+  #crm-notas{width:100%; min-height:56px; font-family:inherit; font-size:12.5px; padding:8px; border:1px solid var(--line-strong); border-radius:6px; background:var(--paper-raised); color:var(--ink); resize:vertical;}
+  .detail-notes{font-size:12.5px; line-height:1.55; color:var(--ink); background:var(--paper-sunken); border-radius:8px; padding:10px 11px;}
+  .detail-notes b{color:var(--ink-muted); font-weight:600; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; display:block; margin-bottom:4px;}
+  .source-row{display:flex; justify-content:space-between; gap:10px; font-size:12px; padding:4px 0; border-top:1px solid var(--line);}
+  .source-row:first-of-type{border-top:none; padding-top:0;}
+  .source-row span:first-child{color:var(--ink-muted);}
+  .source-row span:last-child{font-family:'IBM Plex Mono'; text-align:right;}
+  .detail-link{
+    display:inline-flex; align-items:center; justify-content:center; gap:6px;
+    background:var(--accent); color:var(--paper-raised); font-weight:600; font-size:13px;
+    text-decoration:none; padding:10px; border-radius:8px; margin-top:2px;
+  }
+  .detail-link:hover{opacity:.9;}
+  .detail-link.disabled{background:var(--paper-sunken); color:var(--ink-faint); pointer-events:none;}
+  .approx-note{font-size:11.5px; color:var(--ink-faint); display:flex; gap:5px; align-items:center;}
+
+  footer{color:var(--ink-faint); font-size:11.5px; text-align:center; padding-top:8px;}
+
+  @media (prefers-reduced-motion:reduce){ *{transition:none !important;} }
+</style>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="brandmark" aria-label="WEDO ENGINEER"><span class="bm-word">w<span class="bm-e">e</span>do</span><span class="bm-sub">Engineer</span></div>
+    <div class="eyebrow">EN-2614 · subsidio de vivienda rural, construcción en sitio propio</div>
+    <h1>Atlas de Lotes Cundinamarca</h1>
+    <p class="subtitle">49 lotes recopilados del chat de WhatsApp <b>“Proyecto Airbnb”</b> (17 feb – 14 sep 2026) y sus avisos de Fincaraíz, ubicados y clasificados contra los criterios del subsidio: clasificación rural, escritura individual y ausencia de alertas jurídicas o inconsistencias en el aviso. (2 lotes descartados por aviso caído no se muestran.)</p>
+  </header>
+
+  <div class="layout">
+
+    <details class="mobile-filters">
+      <summary>Filtros <span id="mobile-count-badge"></span></summary>
+      <div id="filters-mount"></div>
+    </details>
+
+    <aside class="panel" id="filters-desktop"></aside>
+
+    <main>
+      <div class="count-line">Mostrando <b id="count-shown">49</b> de <b>49</b> lotes</div>
+
+      <div id="map-view">
+        <div class="map-box">
+          <div id="map-leaflet" role="img" aria-label="Mapa de ubicación de los lotes en Cundinamarca"></div>
+          <div class="legend" id="legend"></div>
+        </div>
+        <div class="afinidad-info">
+          <div class="f-title">¿Cómo se calcula la Afinidad al subsidio?</div>
+          <div class="criteria">
+            <span class="chip"><b>35</b> Rural confirmado</span>
+            <span class="chip"><b>20</b> Escritura individual / sin alerta jurídica</span>
+            <span class="chip"><b>15</b> Precio ≤ tope subsidio ($122.563.350)</span>
+            <span class="chip"><b>15</b> Agua + energía indicadas</span>
+            <span class="chip"><b>10</b> Acceso vehicular documentado</span>
+            <span class="chip"><b>5</b> Aviso vigente</span>
+          </div>
+          <div class="hint">100% = cumple todo lo verificable en el aviso. Si el lote es explícitamente urbano, el aviso sugiere proindiviso/derechos y acciones, o ya no está disponible, el % queda topado bajo aunque el resto puntúe bien — son los requisitos obligatorio y filtro prioritario del subsidio de vivienda rural.</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr id="cards-thead"></tr></thead>
+            <tbody id="cards-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <aside class="panel" id="detail"></aside>
+  </div>
+
+  <footer>Fuente de los datos: avisos de Fincaraíz (ver link "Fuente" en cada lote) · verificados por WEDO ENGINEER el 12–15 sep 2026 · fecha de publicación solo se muestra cuando el propio aviso la declara — "sin fecha" no implica que el aviso sea viejo, solo que Fincaraíz no la publicó · precios y disponibilidad pueden haber cambiado, verificar con el vendedor antes de avanzar.</footer>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  var BOGOTA = {lat:4.7110, lon:-74.0721, label:"Bogotá D.C."};
+
+  var RAW = [
+{"id":1,"municipio":"Chocontá","vereda":"Pueblo Viejo","titulo":"Lote en Venta en Pueblo viejo, Chocontá","precio_cop":125000000,"area_m2":2500,"agua":"mencionado","energia":"mencionado","acceso":"12 min casco urbano, excelente acceso vial","rural_mencionado":true,"notas":"Escritura al día; negociable; estrato campestre; publicado 17/07/26","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-pueblo-viejo-choconta/194004743","lat":5.1718607,"lon":-73.6996661,"coords_aproximadas":false,"anunciante":"Sabana Almeidas Bienes Raíces"},
+{"id":2,"municipio":"Chocontá","vereda":null,"titulo":"Lote en Venta en Chocontá","precio_cop":85000000,"area_m2":2900,"agua":"mencionado","energia":"mencionado","acceso":"1h Bogotá / 15min casco urbano","rural_mencionado":true,"notas":"Vista rocas de Suesca y represa Sisga, potencial glamping/cultivo, escrituras al día","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-choconta/193150843","lat":5.1459409,"lon":-73.6839512,"coords_aproximadas":false,"anunciante":"Javier Forero"},
+{"id":3,"municipio":"Chocontá","vereda":"Chingacío/Hatofiero","titulo":"Lote en Venta en Chingacío, Chocontá","precio_cop":72000000,"area_m2":4500,"agua":"mencionado","energia":"mencionado","acceso":"20 min autopista norte, fácil ingreso vehicular","rural_mencionado":true,"notas":"Zona de bosque natural, topografía plana (aviso dice vereda Hatofiero pero título dice Chingacío)","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-chingacio-choconta/193354289","lat":5.1459409,"lon":-73.6839512,"coords_aproximadas":true,"anunciante":"Javier Forero"},
+{"id":4,"municipio":"Chocontá","vereda":"Pueblo Viejo","titulo":"Lote en Venta en Pueblo viejo, Chocontá","precio_cop":160000000,"area_m2":3500,"agua":"mencionado","energia":"mencionado","acceso":"10 min casco urbano","rural_mencionado":true,"notas":"Documentos al día, estrato campestre, para vivienda campestre","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-pueblo-viejo-choconta/194004860","lat":5.1718607,"lon":-73.6996661,"coords_aproximadas":false,"anunciante":"Sabana Almeidas Bienes Raíces"},
+{"id":5,"municipio":"Chocontá","vereda":"Pueblo Viejo (sector Tejar)","titulo":"Lote en Venta en Tejar, Chocontá","precio_cop":48000000,"area_m2":1450,"agua":"mencionado","energia":"mencionado","acceso":"fácil acceso vehicular, muy cerca al pueblo","rural_mencionado":null,"notas":"Venta o permuta, facilidades de pago","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-tejar-choconta/193996675","lat":5.1459409,"lon":-73.6839512,"coords_aproximadas":true,"anunciante":"Javier Forero"},
+{"id":6,"municipio":"Chocontá","vereda":"Pueblo Viejo","titulo":"Lote en Venta en Pueblo viejo, Chocontá","precio_cop":130000000,"area_m2":2200,"agua":"mencionado","energia":"mencionado","acceso":"15 min al pueblo en auto","rural_mencionado":true,"notas":"INCONSISTENCIA en el aviso: encabezado $130M vs texto interno \"$95M negociables\"; ficha de área muestra 1m² vs texto 2.200m². Verificar directamente con el vendedor. Estrato 1.","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-pueblo-viejo-choconta/191213618","lat":5.1718607,"lon":-73.6996661,"coords_aproximadas":false,"anunciante":"Sabana Almeidas Bienes Raíces"},
+{"id":7,"municipio":"Chocontá","vereda":"Pueblo Viejo","titulo":"Lote en Venta en Chocontá","precio_cop":138000000,"area_m2":1500,"agua":"mencionado","energia":"mencionado","acceso":"10 min centro del pueblo, excelentes vías","rural_mencionado":true,"notas":"Topografía plana, sector rural, publicado 3 feb 2026","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-choconta/193353706","lat":5.1718607,"lon":-73.6996661,"coords_aproximadas":false,"anunciante":"Javier Forero"},
+{"id":8,"municipio":"Chocontá","vereda":"Pueblo Viejo","titulo":"Lote en Venta en Pueblo viejo, Chocontá","precio_cop":185000000,"area_m2":5000,"agua":"mencionado","energia":"mencionado","acceso":"menos de 5 min del pueblo, excelentes vías","rural_mencionado":true,"notas":"Lote campestre, ideal casa de descanso/cultivo, negociable, publicado 10 sep 2025","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-pueblo-viejo-choconta/192855693","lat":5.1718607,"lon":-73.6996661,"coords_aproximadas":false,"anunciante":"Javier Forero"},
+{"id":9,"municipio":"Chocontá","vereda":"Manacá","titulo":"Lote en Venta en Manaca, Chocontá","precio_cop":75000000,"area_m2":1300,"agua":"mencionado","energia":"mencionado","acceso":"15 min al pueblo, excelente vía","rural_mencionado":true,"notas":"Paz y salvo y escrituras al día","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-manaca-choconta/194154278","lat":5.1273891,"lon":-73.7247897,"coords_aproximadas":false,"anunciante":"Sabana Almeidas Bienes Raíces"},
+{"id":10,"municipio":"La Mesa","vereda":"La Esperanza","titulo":"Lote en Venta en Esperanza, La mesa","precio_cop":95000000,"area_m2":1600,"agua":"mencionado","energia":null,"acceso":"acceso para carro campero","rural_mencionado":true,"notas":"40x40m, licencia construcción 1 nivel, pago de contado, estrato 3, antigüedad <1 año","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-esperanza-la-mesa/194202427","lat":4.6979406,"lon":-74.4326926,"coords_aproximadas":false,"anunciante":"Ana Torres (Asesora de venta)"},
+{"id":11,"municipio":"La Mesa","vereda":"Santa Bárbara","titulo":"Lote en Venta en El centro, La mesa","precio_cop":195000000,"area_m2":1950,"agua":"mencionado","energia":null,"acceso":"cerca de la carretera","rural_mencionado":true,"notas":"Tanque subterráneo 22.000L, parqueadero en piedra, estrato 3","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-el-centro-la-mesa/194174452","lat":4.6324353,"lon":-74.4597204,"coords_aproximadas":false,"anunciante":"Soluciones Inmobiliarias FD"},
+{"id":12,"municipio":"La Mesa","vereda":"El Centro (La Perlita)","titulo":"Lote en Venta en El centro, La mesa","precio_cop":145000000,"area_m2":1300,"agua":"mencionado","energia":"mencionado","acceso":"5 min de la vía","rural_mencionado":true,"notas":"Pozo séptico, conjunto cerrado con 2 entradas, piscina, admin $750.000/mes (1er año gratis)","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-el-centro-la-mesa/192390721","lat":4.6323002,"lon":-74.4633989,"coords_aproximadas":true,"anunciante":"Con Dominio Inmobiliario SAS"},
+{"id":13,"municipio":"La Mesa","vereda":"Santa Bárbara","titulo":"Lote en Venta en El centro, La mesa","precio_cop":140000000,"area_m2":750,"agua":null,"energia":null,"acceso":"vía terciaria a San Joaquín, ~2km de vía La Mesa-Anapoima","rural_mencionado":true,"notas":"Ladera sembrada con mango y cítricos; 750m² son para construcción, resto es ladera","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-el-centro-la-mesa/194112839","lat":4.6324353,"lon":-74.4597204,"coords_aproximadas":false,"anunciante":"Germancujar"},
+{"id":14,"municipio":"La Mesa","vereda":"El Palmar (Lagunas Parte Alta)","titulo":"Lote en Venta en Lagunas parte alta, La mesa","precio_cop":120000000,"area_m2":1059,"agua":"mencionado","energia":"pendiente de solicitar","acceso":"doble entrada","rural_mencionado":true,"notas":"865 msnm, ~50x20m, árboles frutales, cercado; NO es condominio ni conjunto","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-lagunas-parte-alta-la-mesa/194128739","lat":4.6323002,"lon":-74.4633989,"coords_aproximadas":true,"anunciante":"Eliana Rojas"},
+{"id":15,"municipio":"Villapinzón","vereda":"Faracia (Chasquez)","titulo":"Lote en Venta en Villapinzon","precio_cop":140000000,"area_m2":6000,"agua":"mencionado","energia":"mencionado","acceso":"sobre carretera principal","rural_mencionado":true,"notas":"Mirador/vista panorámica, potencial vivienda campestre o comercial","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-villapinzon/193580641","lat":5.2215207,"lon":-73.58989,"coords_aproximadas":true,"anunciante":"Sabana Almeidas Bienes Raíces"},
+{"id":16,"municipio":"Villapinzón","vereda":"Sonsa Alto","titulo":"Lote en Venta en Sonsa, Villapinzon","precio_cop":185000000,"area_m2":8000,"agua":"mencionado","energia":"mencionado","acceso":"10 min casco urbano","rural_mencionado":true,"notas":"Documentación al día, lista para traspaso","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-sonsa-villapinzon/193509969","lat":5.2215207,"lon":-73.58989,"coords_aproximadas":true,"anunciante":"Sabana Almeidas Bienes Raíces"},
+{"id":17,"municipio":"Villapinzón","vereda":"San Pablo","titulo":"Lote en Venta en Villapinzon","precio_cop":120000000,"area_m2":3000,"agua":"mencionado","energia":"mencionado","acceso":"10 min autopista Bogotá-Tunja","rural_mencionado":true,"notas":"Agua de nacederos + acueducto, estrato campestre","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-villapinzon/193987252","lat":5.284396,"lon":-73.5938686,"coords_aproximadas":false,"anunciante":"Sabana Almeidas Bienes Raíces"},
+{"id":18,"municipio":"Villapinzón","vereda":"Sonsa","titulo":"Lote en Venta en Sonsa, Villapinzon","precio_cop":85000000,"area_m2":4000,"agua":"mencionado","energia":"mencionado","acceso":"10 min autopista norte y casco urbano","rural_mencionado":true,"notas":"Escrituras independientes, bosque propio, mirador","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-sonsa-villapinzon/193509806","lat":5.2388568,"lon":-73.6338251,"coords_aproximadas":false,"anunciante":"Sabana Almeidas Bienes Raíces"},
+{"id":19,"municipio":"Girardot","vereda":"Miraflores","titulo":"Lote en Venta en Girardot","precio_cop":72225000,"area_m2":200,"agua":"mencionado","energia":"mencionado","acceso":"8 min de Girardot, 3h de Bogotá","rural_mencionado":false,"notas":"Descrito como lote urbano, todas redes de servicios instaladas, estrato 3","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-girardot/193386683","lat":4.3067554,"lon":-74.8044984,"coords_aproximadas":false,"anunciante":"Construc Inmobiliaria"},
+{"id":20,"municipio":"Girardot","vereda":"Miraflores","titulo":"Lote en Venta en Cundinamarca, Girardot","precio_cop":72225000,"area_m2":200,"agua":"mencionado","energia":"mencionado","acceso":"vías pavimentadas con sardinel, 3h de Bogotá","rural_mencionado":false,"notas":"Mismo precio/área que el aviso 193386683 (posible mismo desarrollo/proyecto)","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-cundinamarca-girardot/193872883","lat":4.3067554,"lon":-74.8044984,"coords_aproximadas":false,"anunciante":"Construc Inmobiliaria"},
+{"id":21,"municipio":"Girardot","vereda":"Miraflores","titulo":"Lote en Venta en Girardot","precio_cop":44800000,"area_m2":98,"agua":"mencionado","energia":"mencionado","acceso":null,"rural_mencionado":false,"notas":"Terreno plano listo para construir, estrato 3. Pipe envió este link dos veces en el chat.","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-girardot/193869638","lat":4.3067554,"lon":-74.8044984,"coords_aproximadas":false,"anunciante":"Construc Inmobiliaria"},
+{"id":22,"municipio":"Girardot","vereda":"Topacio (Miraflores)","titulo":"Lote en Venta en Girardot","precio_cop":72225000,"area_m2":200,"agua":"mencionado","energia":"mencionado","acceso":"vías internas pavimentadas, acceso desde variante Ibagué-Bogotá","rural_mencionado":null,"notas":"Proyecto de urbanización en vereda, permite hasta 2 pisos, acepta financiamiento","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-girardot/193391222","lat":4.3046383,"lon":-74.8030739,"coords_aproximadas":true,"anunciante":"Construc Inmobiliaria"},
+{"id":23,"municipio":"Girardot","vereda":null,"titulo":"Lote en Venta en Girardot","precio_cop":65000000,"area_m2":113,"agua":"mencionado","energia":"mencionado","acceso":"sobre Ruta del Sol","rural_mencionado":null,"notas":"Condominio El Sendero del Sol (119 lotes), vigilancia 24/7, piscina, playa húmeda","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-girardot/192330251","lat":4.3046383,"lon":-74.8030739,"coords_aproximadas":false,"anunciante":"Remax One"},
+{"id":24,"municipio":"Ricaurte","vereda":null,"titulo":"Lote en Venta en Ricaurte","precio_cop":100045000,"area_m2":500,"agua":"mencionado","energia":"mencionado","acceso":"vías internas pavimentadas, 8 min de Girardot","rural_mencionado":null,"notas":"Proyecto con amenidades (piscinas, portería 24/7), permite construir con piscina privada","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-ricaurte/193872667","lat":4.2777357,"lon":-74.7718165,"coords_aproximadas":false,"anunciante":"Construc Inmobiliaria"},
+{"id":26,"municipio":"Ricaurte","vereda":"Las Palmas","titulo":"Lote en Venta en Ricaurte","precio_cop":160000000,"area_m2":1348,"agua":null,"energia":null,"acceso":"cercado con malla y portón de acceso","rural_mencionado":true,"notas":"Hacienda Peñalisa Guadua, estrato 2, antigüedad >30 años, oportunidad construcción campestre/cabañas/agrícola","favorito":true,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-ricaurte/193438836","lat":4.2890369,"lon":-74.7732794,"coords_aproximadas":false,"anunciante":"DCNA Inmobiliaria"},
+{"id":27,"municipio":"Anapoima","vereda":"La Esmeralda","titulo":"Lote en Venta en La esmeralda, Anapoima","precio_cop":150000000,"area_m2":800,"agua":"mencionado","energia":"mencionado","acceso":"vías internas en buen estado, 1h30 de Bogotá pavimentada","rural_mencionado":null,"notas":"Dentro de condominio cerrado con portería 24/7, admin $185.000/mes, estrato 3","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-la-esmeralda-anapoima/193698596","lat":4.5493011,"lon":-74.5359119,"coords_aproximadas":true,"anunciante":"Juan Villamil"},
+{"id":28,"municipio":"Anapoima","vereda":"El Consuelo (El Triunfo)","titulo":"Lote en venta en El triunfo, Anapoima","precio_cop":140000000,"area_m2":4920,"agua":"mencionado","energia":"mencionado","acceso":"20 min de Anapoima vía El Triunfo","rural_mencionado":true,"notas":"20% plano / 80% pendiente, árboles frutales","favorito":true,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-el-triunfo-anapoima/7462485","lat":4.5493011,"lon":-74.5359119,"coords_aproximadas":true,"anunciante":"Kasaganaan Organización Inmobiliaria"},
+{"id":29,"municipio":"Silvania","vereda":null,"titulo":"Lote en Venta en Silvania","precio_cop":200000000,"area_m2":387,"agua":null,"energia":null,"acceso":"estratégicamente ubicado","rural_mencionado":null,"notas":"Condominio Campestre Hacienda del Bosque, sector Centro, estrato 4, entorno natural pero no explícitamente rural","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-silvania/194237386","lat":4.4048536,"lon":-74.3872407,"coords_aproximadas":false,"anunciante":"AAArquitectura 94 SAS"},
+{"id":30,"municipio":"Silvania","vereda":null,"titulo":"Lote en Venta en Silvania","precio_cop":45000000,"area_m2":50,"agua":"mencionado","energia":"mencionado","acceso":null,"rural_mencionado":false,"notas":"Sector Centro, tiene escrituras e impuestos al día, acepta permuta por carro","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-silvania/194144196","lat":4.4048536,"lon":-74.3872407,"coords_aproximadas":false,"anunciante":"Juan Rico"},
+{"id":31,"municipio":"Silvania","vereda":"San Luis","titulo":"Lote en Venta en Silvania","precio_cop":240000000,"area_m2":14150,"agua":"mencionado","energia":"mencionado","acceso":"2,5km de Autopista Sur, acceso privilegiado","rural_mencionado":null,"notas":"INCONSISTENCIA: aviso confuso, menciona Lote1 $280M/4.000m2 y Lote2 $420M/10.150m2 pero el precio principal listado es $240M (no coincide con la suma). Verificar si son 1 o 2 lotes. Vereda San Luis vía Las Torres, escritura pública.","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-silvania/193097078","lat":4.4662142,"lon":-74.3528797,"coords_aproximadas":false,"anunciante":"Edith Valderrama (Agente Profesional Bienes Raíces)"},
+{"id":32,"municipio":"Cachipay","vereda":"San Pedro (El Progreso)","titulo":"Lote en Venta en Cachipay","precio_cop":140000000,"area_m2":430,"agua":null,"energia":null,"acceso":"5 min parque principal, 1h30 de Bogotá, sector tranquilo","rural_mencionado":true,"notas":"Escritura propia, tierra fértil con cultivos de pancoger","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-cachipay/193345946","lat":4.7310662,"lon":-74.4367577,"coords_aproximadas":true,"anunciante":"Heidy"},
+{"id":33,"municipio":"Cachipay","vereda":null,"titulo":"Lote en Venta en Cachipay","precio_cop":150000000,"area_m2":1000,"agua":"mencionado","energia":"mencionado","acceso":"carreteras en recebo compactado","rural_mencionado":null,"notas":"Condominio Pasatiempo, zona suburbana, 182m de frente de Río Apulo, estrato 2","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-cachipay/194008599","lat":4.7310662,"lon":-74.4367577,"coords_aproximadas":false,"anunciante":"Redinmuebles"},
+{"id":34,"municipio":"Subachoque","vereda":"El Guamal","titulo":"Lote en Venta en Subachoque","precio_cop":130000000,"area_m2":8500,"agua":"mencionado","energia":"mencionado","acceso":"carretera hasta entrada del predio, 30 min casco urbano","rural_mencionado":true,"notas":"Ramal Piedra Ancha, potencial cultivos/ganadería/vivienda campestre, escritura pública","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-subachoque/193378781","lat":5.0385457,"lon":-74.1183846,"coords_aproximadas":false,"anunciante":"Escobar Salamanca y Cía Ltda"},
+{"id":35,"municipio":"Subachoque","vereda":"Villamaría (El Guamal)","titulo":"Lote en Venta en Subachoque","precio_cop":150000000,"area_m2":10000,"agua":"mencionado","energia":"mencionado","acceso":"ramal Piedra Ancha, 30 min casco urbano","rural_mencionado":true,"notas":"Tierras fértiles para cultivos/ganadería, escritura pública","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-subachoque/193307463","lat":4.9659026,"lon":-74.1668581,"coords_aproximadas":true,"anunciante":"Escobar Salamanca y Cía Ltda"},
+{"id":36,"municipio":"Tocaima","vereda":"Isna","titulo":"Lote en Venta en Isna, Tocaima","precio_cop":130000000,"area_m2":430,"agua":"mencionado","energia":null,"acceso":null,"rural_mencionado":true,"notas":"Condominio campestre Tequesta Country Club, frente 20m fondo 21.5m, admin $380.000/mes, estrato 3, negociable","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-isna-tocaima/194056218","lat":4.4579274,"lon":-74.6342234,"coords_aproximadas":true,"anunciante":"Cesar Castiblanco"},
+{"id":38,"municipio":"El Colegio","vereda":"La Rambla (Santo Tomás)","titulo":"Lote en Venta en Mesitas del Colegio, El colegio","precio_cop":75000000,"area_m2":1300,"agua":null,"energia":null,"acceso":"5 min vía principal Bogotá-Mesitas, excelentes vías","rural_mencionado":null,"notas":"Estrato 1, hasta 2 años sin intereses","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-mesitas-del-colegio-el-colegio/193667536","lat":4.5802618,"lon":-74.442374,"coords_aproximadas":true,"anunciante":"Home Pro"},
+{"id":39,"municipio":"El Colegio","vereda":"El Prado (Santo Tomás)","titulo":"Lote en Venta en El Prado, El colegio","precio_cop":110000000,"area_m2":1000,"agua":null,"energia":null,"acceso":"vía secundaria tranquila, transporte público cercano","rural_mencionado":null,"notas":"Documentación impecable, estrato 2","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-el-prado-el-colegio/192465837","lat":4.5802618,"lon":-74.442374,"coords_aproximadas":true,"anunciante":"Lili Rojas Bienes Raíces"},
+{"id":40,"municipio":"Villeta","vereda":"Pilones (Salitre Blanco Bajo)","titulo":"Lote en Venta en Salitre blanco bajo, Quebradanegra","precio_cop":180000000,"area_m2":1664,"agua":"mencionado","energia":"mencionado","acceso":"vías de acceso en buen estado","rural_mencionado":true,"notas":"El municipio real es VILLETA (no Quebradanegra) — confirma la duda que Pipe expresó en el chat el 12/09 (\"dice rural villeta\")","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-salitre-blanco-bajo-quebradanegra/194007638","lat":5.0112575,"lon":-74.4702304,"coords_aproximadas":true,"anunciante":"Urbanlex SAS"},
+{"id":41,"municipio":"Suesca","vereda":"Hato Grande","titulo":"Lote en Venta en Suesca, Cundinamarca","precio_cop":120000000,"area_m2":6500,"agua":null,"energia":"mencionado","acceso":"excelentes vías de acceso","rural_mencionado":true,"notas":"Estrato 1, antigüedad >30 años, venta directa con propietario, negociable","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-suesca-cundinamarca/193749286","lat":5.2163307,"lon":-73.7058983,"coords_aproximadas":false,"anunciante":"Javier Forero"},
+{"id":42,"municipio":"Carmen de Carupa","vereda":"Llano Grande","titulo":"Lote en venta en Carmen de carupa","precio_cop":160000000,"area_m2":14500,"agua":"mencionado","energia":null,"acceso":"placa huella frente al lote, vía al embalse El Hato","rural_mencionado":true,"notas":"Estrato 1, potencial hasta 3 casas, antigüedad >30 años","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-carmen-de-carupa/10841024","lat":5.4163544,"lon":-73.8758871,"coords_aproximadas":false,"anunciante":"Grupo Inmobiliario Avacol"},
+{"id":43,"municipio":"Vergara","vereda":"Río Seco (Las Caicas)","titulo":"Lote en Venta en Rio seco, Vergara","precio_cop":120000000,"area_m2":10000,"agua":"mencionado","energia":null,"acceso":"vía terciaria, 25 min de centro poblado, excelente acceso","rural_mencionado":true,"notas":"Río a 80m, cascadas, quebradas, nacimientos de agua; cerca de reserva natural Jaguarundi y Cañón Las Caicas","favorito":true,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-rio-seco-vergara/193493959","lat":5.1183756,"lon":-74.3451863,"coords_aproximadas":true,"anunciante":"Juan Ortiz Mahecha"},
+{"id":44,"municipio":"La Vega","vereda":"Petaquero","titulo":"Lote en Venta en Petaquero, La vega","precio_cop":170000000,"area_m2":1837,"agua":"mencionado","energia":"mencionado","acceso":"placa huella, 10 min parque principal, 1.5km de vía nacional doble calzada","rural_mencionado":true,"notas":"Escritura pública propia, documentos e impuestos al día, árboles frutales, cercado","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-petaquero-la-vega/193120044","lat":4.9997123,"lon":-74.3395223,"coords_aproximadas":true,"anunciante":"Daniel Pineda Pineda"},
+{"id":45,"municipio":"San Antonio del Tequendama","vereda":"Santivar","titulo":"Lote en Venta en Santivar, San antonio del tequendama","precio_cop":115000000,"area_m2":511,"agua":"mencionado","energia":null,"acceso":"entrada privada, placa huella","rural_mencionado":true,"notas":"Aviso aclara explícitamente \"NO ES PROINDIVISO\" — cumple el filtro prioritario de escritura individual. Estrato 3.","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-santivar-san-antonio-del-tequendama/194217126","lat":4.5795268,"lon":-74.3745065,"coords_aproximadas":false,"anunciante":"Nelson"},
+{"id":46,"municipio":"Suesca","vereda":"Hato Grande","titulo":"Lote en Venta","precio_cop":65000000,"area_m2":6500,"agua":null,"energia":"mencionado","acceso":"excelentes vías de acceso","rural_mencionado":true,"notas":"URL genérica sin municipio, pero está en Suesca (vereda Hato Grande); bajó de precio; estrato 1; venta directa con propietario","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta/193413490","lat":5.2163307,"lon":-73.7058983,"coords_aproximadas":false,"anunciante":"Javier Forero"},
+{"id":47,"municipio":"Tibacuy","vereda":"Cumaca (Naranjal)","titulo":"Lote en Venta en Tibacuy","precio_cop":69000000,"area_m2":360,"agua":null,"energia":null,"acceso":"vías pavimentadas, acceso por vías públicas","rural_mencionado":false,"notas":"Descrito como predio urbano, lote esquinero, escritura pública independiente, estrato 2, 2.5h de Bogotá","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-tibacuy/191732094","lat":4.3476755,"lon":-74.45273,"coords_aproximadas":true,"anunciante":"Topoterrenos"},
+{"id":48,"municipio":"Tocancipá","vereda":"La Fuente","titulo":"Lote en Venta en La fuente, Tocancipá","precio_cop":87000000,"area_m2":84,"agua":null,"energia":null,"acceso":"15 min centro del pueblo vía Zipaquirá","rural_mencionado":null,"notas":"Conjunto de 234 unidades, licencia construcción no vigente para 3 pisos, estrato 4","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-la-fuente-tocancipa/192073695","lat":5.0034985,"lon":-73.9373585,"coords_aproximadas":false,"anunciante":"Alanis Inmobiliaria"},
+{"id":49,"municipio":"Pacho","vereda":"Llano del Trigo (La Cabrera)","titulo":"Lote en Venta en Pacho","precio_cop":190000000,"area_m2":2000,"agua":"mencionado","energia":null,"acceso":"carretera pavimentada hasta el lote","rural_mencionado":true,"notas":"Uso de suelo agroindustrial rural, 2h de Bogotá, estrato 3, antigüedad 16-30 años","favorito":false,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-pacho/192666939","lat":5.1301473,"lon":-74.1583128,"coords_aproximadas":true,"anunciante":"Inmobiliarios de la Sabana"},
+{"id":50,"municipio":"Nilo","vereda":"Bavaria","titulo":"Lote en Venta en Nilo","precio_cop":166000000,"area_m2":780,"agua":"mencionado","energia":"mencionado","acceso":"entre Melgar y Girardot, 10 min de Piscilago","rural_mencionado":null,"notas":"Condominio con piscina semiolímpica, cancha de tenis, salón social","favorito":true,"accesible":true,"url":"https://www.fincaraiz.com.co/lote-en-venta-en-nilo/193558357","lat":4.3065906,"lon":-74.6197608,"coords_aproximadas":true,"anunciante":"Insignia Inmobiliaria"},
+{"id":51,"municipio":"Chocontá","vereda":"Pueblo Viejo","titulo":"Lote Chocontá (compartido por fotos en WhatsApp, sin aviso web)","precio_cop":125000000,"area_m2":6000,"agua":null,"energia":null,"acceso":null,"rural_mencionado":true,"notas":"Lote ya visto con fotos por WhatsApp el 8/09, sin aviso web asociado. Pipe indicó el 11/09 que este y otros similares se salen del presupuesto.","favorito":false,"accesible":true,"url":null,"lat":5.1718607,"lon":-73.6996661,"coords_aproximadas":false,"anunciante":null}
+  ];
+
+  // Lotes descartados del Atlas (ya no disponibles en Fincaraíz) — NO volver a consultar estas URLs
+  // en futuras actualizaciones, ya se confirmó que están caídas.
+  var DESCARTADOS_NO_CONSULTAR = [
+    {id:25, municipio:"Ricaurte", url:"https://www.fincaraiz.com.co/lote-en-venta-en-ricaurte/193478328", motivo:"Ya no disponible, verificado 15/09/26"},
+    {id:37, municipio:"Tocaima (Salada)", url:"https://www.fincaraiz.com.co/lote-en-venta-en-salada-tocaima/193710218", motivo:"Aviso caído (HTTP 404), verificado 15/09/26"}
+  ];
+
+  // Registro de la última vez que se verificó cada lote contra Fincaraíz (yyyy-mm-dd).
+  // Al "actualizar" solo hace falta re-consultar los que llevan más días sin chequeo —
+  // no hace falta repetir los que ya se investigaron recientemente, y nunca los de DESCARTADOS_NO_CONSULTAR.
+  var ULTIMA_VERIFICACION = {
+    1:"2026-09-15", 2:"2026-09-15", 3:"2026-09-15", 4:"2026-09-15", 5:"2026-09-15",
+    6:"2026-09-15", 7:"2026-09-15", 8:"2026-09-15", 9:"2026-09-15", 10:"2026-09-15",
+    11:"2026-09-15", 12:"2026-09-15", 13:"2026-09-15", 14:"2026-09-15", 15:"2026-09-15",
+    16:"2026-09-15", 17:"2026-09-15", 18:"2026-09-15", 19:"2026-09-15", 20:"2026-09-15",
+    21:"2026-09-15", 22:"2026-09-15", 23:"2026-09-15", 24:"2026-09-15", 26:"2026-09-15",
+    27:"2026-09-15", 28:"2026-09-15", 29:"2026-09-15", 30:"2026-09-15", 31:"2026-09-15",
+    32:"2026-09-15", 33:"2026-09-15", 34:"2026-09-15", 35:"2026-09-15", 36:"2026-09-15",
+    38:"2026-09-15", 39:"2026-09-15", 40:"2026-09-15", 41:"2026-09-15", 42:"2026-09-15",
+    43:"2026-09-15", 44:"2026-09-15", 45:"2026-09-15", 46:"2026-09-15", 47:"2026-09-15",
+    48:"2026-09-15", 49:"2026-09-15", 50:"2026-09-15"
+    // 51 no tiene aviso web (compartido por WhatsApp) — no aplica verificación contra Fincaraíz.
+  };
+
+  var STATUS_LABEL = {good:"Rural confirmado", warning:"Revisar"};
+
+  var HOY = new Date("2026-09-15T00:00:00");
+  var VERIFICADO_TEXTO = "12–15 sep 2026";
+  // Fechas de publicación confirmadas en el texto del aviso (solo se afirma lo que el aviso dice explícitamente).
+  var FECHAS = {
+    1: {fecha:"2026-07-17", texto:"17/07/2026"},
+    2: {fecha:"2025-11-28", texto:"28/11/2025"},
+    3: {fecha:"2026-02-03", texto:"03/02/2026"},
+    4: {fecha:"2026-07-17", texto:"17/07/2026"},
+    5: {fecha:"2026-07-16", texto:"16/07/2026"},
+    6: {fecha:"2024-08-09", texto:"09/08/2024"},
+    7: {fecha:"2026-02-03", texto:"3 feb 2026"},
+    8: {fecha:"2025-09-10", texto:"10 sep 2025"},
+    9: {fecha:"2026-08-24", texto:"24/08/2026"},
+    10: {fecha:"2026-09-02", texto:"02/09/2026"},
+    11: {fecha:"2026-08-27", texto:"27/08/2026"},
+    12: {fecha:"2025-05-14", texto:"14/05/2025"},
+    13: {fecha:"2026-08-13", texto:"13/08/2026"},
+    14: {fecha:"2026-08-18", texto:"18/08/2026"},
+    15: {fecha:"2026-03-30", texto:"30/03/2026"},
+    16: {fecha:"2026-03-13", texto:"13/03/2026"},
+    17: {fecha:"2026-07-14", texto:"14/07/2026"},
+    18: {fecha:"2026-03-13", texto:"13/03/2026"},
+    19: {fecha:"2026-02-11", texto:"11/02/2026"},
+    20: {fecha:"2026-06-12", texto:"12/06/2026"},
+    21: {fecha:"2026-06-11", texto:"11/06/2026"},
+    22: {fecha:"2026-02-12", texto:"12/02/2026"},
+    23: {fecha:"2025-04-30", texto:"30/04/2025"},
+    24: {fecha:"2026-06-12", texto:"12/06/2026"},
+    26: {fecha:"2026-02-25", texto:"25/02/2026"},
+    27: {fecha:"2026-05-01", texto:"01/05/2026"},
+    28: {fecha:"2022-07-26", texto:"26/07/2022"},
+    29: {fecha:"2026-09-10", texto:"10/09/2026"},
+    30: {fecha:"2026-08-21", texto:"21/08/2026"},
+    31: {fecha:"2025-11-13", texto:"13/11/2025"},
+    32: {fecha:"2026-01-31", texto:"31/01/2026"},
+    33: {fecha:"2026-07-19", texto:"19/07/2026"},
+    34: {fecha:"2026-02-10", texto:"10/02/2026"},
+    35: {fecha:"2026-01-22", texto:"22/01/2026"},
+    36: {fecha:"2026-07-30", texto:"30/07/2026"},
+    38: {fecha:"2026-04-23", texto:"23/04/2026"},
+    39: {fecha:"2025-05-29", texto:"29/05/2025"},
+    40: {fecha:"2026-07-18", texto:"18/07/2026"},
+    41: {fecha:"2026-05-14", texto:"14/05/2026"},
+    42: {fecha:"2024-05-02", texto:"02/05/2024"},
+    43: {fecha:"2026-03-11", texto:"11/03/2026"},
+    44: {fecha:"2025-11-20", texto:"20/11/2025"},
+    45: {fecha:"2026-09-06", texto:"06/09/2026"},
+    46: {fecha:"2026-02-19", texto:"19/02/2026"},
+    47: {fecha:"2024-11-27", texto:"27/11/2024"},
+    48: {fecha:"2025-02-26", texto:"26/02/2025"},
+    49: {fecha:"2025-07-22", texto:"22/07/2025"},
+    50: {fecha:"2026-03-24", texto:"24/03/2026"}
+  };
+  var fmtFecha = new Intl.DateTimeFormat('es-CO',{day:'numeric',month:'short',year:'numeric'});
+  function freshness(l){
+    if(!l.fecha_publicado) return {cls:"neutral", label:"Fecha no informada en el aviso"};
+    var pub = new Date(l.fecha_publicado+"T00:00:00");
+    var dias = Math.max(0, Math.round((HOY-pub)/86400000));
+    var meses = dias/30.44;
+    if(meses>6) return {cls:"critical", label:"Aviso antiguo · hace "+Math.round(meses)+" meses"};
+    if(meses>2) return {cls:"warning", label:"Hace "+Math.round(meses)+" meses"};
+    if(dias>30) return {cls:"good", label:"Hace "+Math.round(meses)+" mes"+(Math.round(meses)===1?"":"es")};
+    return {cls:"good", label:"Reciente · hace "+dias+" días"};
+  }
+
+  function classify(l){
+    var notas = (l.notas||"").toUpperCase();
+    if(notas.indexOf("INCONSISTENCIA")>=0) return "warning";
+    if(l.rural_mencionado===false) return "warning";
+    if(l.rural_mencionado===null || l.rural_mencionado===undefined) return "warning";
+    return "good";
+  }
+  function statusReason(l){
+    var notas = (l.notas||"").toUpperCase();
+    if(notas.indexOf("INCONSISTENCIA")>=0) return "El aviso tiene datos inconsistentes — verificar con el vendedor";
+    if(l.rural_mencionado===false) return "El aviso lo describe como urbano, no rural";
+    if(l.rural_mencionado===null || l.rural_mencionado===undefined) return "El aviso no aclara si es rural — confirmar con Planeación";
+    return "El aviso indica clasificación rural";
+  }
+
+  /* ---------------- afinidad al subsidio (0-100%) ----------------
+     Pondera los criterios de Tabla maestra IA.docx que sí podemos leer del aviso.
+     Rural (35) y escritura individual/sin alerta jurídica (20) son los que más pesan
+     porque son OBLIGATORIO y FILTRO PRIORITARIO del subsidio; un aviso caído (accesible:false)
+     o con alerta jurídica de proindiviso queda topado bajo sin importar el resto. */
+  var SUBSIDIO_MAX_COP = 122563350;
+  function calcAfinidad(l){
+    if(!l.accesible) return 0;
+    var notasUp = (l.notas||"").toUpperCase();
+    var alertaJuridica = /PORCENTAJE|PROINDIVISO|DERECHOS Y ACCIONES|PARTE DE MAYOR EXTENSI/.test(notasUp);
+    var inconsistente = notasUp.indexOf("INCONSISTENCIA")>=0;
+    var escrituraConfirmada = /ESCRITURA (PROPIA|INDIVIDUAL|P[ÚU]BLICA PROPIA)|NO ES PROINDIVISO|MATR[ÍI]CULA (INMOBILIARIA )?INDEPENDIENTE/.test(notasUp);
+
+    var pRural = l.rural_mencionado===true ? 35 : (l.rural_mencionado===false ? 0 : 15);
+    var pEscritura = alertaJuridica ? 0 : (inconsistente ? 5 : (escrituraConfirmada ? 20 : 10));
+    var pPrecio = l.precio_cop==null ? 5 : (l.precio_cop<=SUBSIDIO_MAX_COP ? 15 : (l.precio_cop<=SUBSIDIO_MAX_COP*1.3 ? 7 : 0));
+    function svc(v){ if(!v) return 0; return /pendiente/i.test(v) ? 3.75 : 7.5; }
+    var pServicios = svc(l.agua)+svc(l.energia);
+    var pAcceso = l.acceso ? 10 : 0;
+
+    var total = pRural+pEscritura+pPrecio+pServicios+pAcceso+5; // +5 por aviso vigente (ya garantizado arriba)
+    if(alertaJuridica) total = Math.min(total,25);
+    if(l.rural_mencionado===false) total = Math.min(total,20);
+    return Math.round(total);
+  }
+  function afinidadClass(pct){
+    if(pct>=70) return "good";
+    if(pct>=40) return "warning";
+    return "critical";
+  }
+
+  var LOTES = RAW.map(function(l){
+    var precio_m2 = (l.precio_cop && l.area_m2) ? Math.round(l.precio_cop/l.area_m2) : null;
+    var status = classify(l);
+    var fechaInfo = FECHAS[l.id] || null;
+    var withFecha = Object.assign({}, l, {
+      precio_m2:precio_m2, status:status, statusReason:statusReason(l), afinidad:calcAfinidad(l),
+      fecha_publicado: fechaInfo ? fechaInfo.fecha : null,
+      fecha_texto: fechaInfo ? fechaInfo.texto : null
+    });
+    withFecha.fresh = freshness(withFecha);
+    return withFecha;
+  });
+
+  /* ---------------- jitter for coincident coords ---------------- */
+  var groups = {};
+  LOTES.forEach(function(l){
+    var key = l.lat.toFixed(5)+","+l.lon.toFixed(5);
+    (groups[key]=groups[key]||[]).push(l);
+  });
+  Object.keys(groups).forEach(function(key){
+    var g = groups[key];
+    if(g.length<=1){ g[0]._lat=g[0].lat; g[0]._lon=g[0].lon; return; }
+    var r = 0.0018 + Math.min(g.length,10)*0.0004;
+    g.forEach(function(l,i){
+      var ang = (i/g.length)*Math.PI*2 - Math.PI/2;
+      l._lat = l.lat + Math.sin(ang)*r;
+      l._lon = l.lon + Math.cos(ang)*r;
+    });
+  });
+
+  /* ---------------- formatting ---------------- */
+  var fmtCOP = new Intl.NumberFormat('es-CO',{maximumFractionDigits:0});
+  function money(n){ return n==null ? "—" : "$"+fmtCOP.format(n); }
+  function area(n){ return n==null ? "—" : fmtCOP.format(n)+" m²"; }
+  function esc(s){ return (s==null?"":String(s)).replace(/[&<>"]/g,function(c){ if(c==="&") return "&amp;"; if(c==="<") return "&lt;"; if(c===">") return "&gt;"; return "&quot;"; }); }
+
+  /* ---------------- CRM / seguimiento (guardado en este navegador) ---------------- */
+  var CRM_KEY = "wde_en2614_crm_v1";
+  var ESTADO_CRM_LABEL = {activo:"Activo", descartado:"Descartado"};
+  var fmtFechaCorta = new Intl.DateTimeFormat('es-CO',{day:'numeric',month:'short'});
+  function loadCRM(){
+    try{ return JSON.parse(localStorage.getItem(CRM_KEY)) || {}; }catch(e){ return {}; }
+  }
+  var CRM = loadCRM();
+  function persistCRM(){
+    try{ localStorage.setItem(CRM_KEY, JSON.stringify(CRM)); }catch(e){}
+  }
+  function getCRM(id){
+    return Object.assign({contacto:"", telefono:"", contactado:false, fecha_contacto:null, estado_crm:"activo", notas_propias:""}, CRM[id]||{});
+  }
+  function saveCRM(id, patch){
+    CRM[id] = Object.assign(getCRM(id), patch);
+    persistCRM();
+    renderCards();
+    updateMapDim();
+  }
+
+  /* ---------------- state ---------------- */
+  var prices = LOTES.filter(function(l){return l.precio_cop;}).map(function(l){return l.precio_cop;});
+  var areas = LOTES.filter(function(l){return l.area_m2;}).map(function(l){return l.area_m2;});
+  var municipios = Array.from(new Set(LOTES.map(function(l){return l.municipio;}))).sort();
+
+  var state = {
+    q:"",
+    priceMin:0, priceMax: Math.max.apply(null,prices),
+    areaMin:0, areaMax: Math.max.apply(null,areas),
+    municipios: new Set(municipios),
+    status: new Set(["good","warning"]),
+    crmEstados: new Set(["activo","descartado"]),
+    selected:null
+  };
+  var DEFAULTS = JSON.parse(JSON.stringify({priceMax:state.priceMax, areaMax:state.areaMax}));
+
+  function matches(l){
+    if(!state.status.has(l.status)) return false;
+    if(!state.crmEstados.has(getCRM(l.id).estado_crm)) return false;
+    if(!state.municipios.has(l.municipio)) return false;
+    if(l.precio_cop!=null && (l.precio_cop<state.priceMin || l.precio_cop>state.priceMax)) return false;
+    if(l.area_m2!=null && (l.area_m2<state.areaMin || l.area_m2>state.areaMax)) return false;
+    if(state.q){
+      var hay = (l.municipio+" "+(l.vereda||"")+" "+(l.titulo||"")+" "+(l.notas||"")).toLowerCase();
+      if(hay.indexOf(state.q.toLowerCase())<0) return false;
+    }
+    return true;
+  }
+
+  /* ================= FILTERS PANEL ================= */
+  function filtersHTML(){
+    var muniRows = municipios.map(function(m){
+      var n = LOTES.filter(function(l){return l.municipio===m;}).length;
+      return '<label class="chk"><span class="name"><input type="checkbox" class="f-muni" value="'+esc(m)+'" checked>'+esc(m)+'</span><span class="count">'+n+'</span></label>';
+    }).join('');
+    return ''+
+    '<div class="f-group">'+
+      '<div class="f-title">Buscar</div>'+
+      '<input type="text" id="f-q" placeholder="municipio, vereda, palabra clave…">'+
+    '</div>'+
+    '<div class="f-group">'+
+      '<div class="f-title">Precio (COP)</div>'+
+      '<div class="range-row"><input type="number" id="f-price-min" min="0" step="5000000" value="0"><input type="number" id="f-price-max" min="0" step="5000000" value="'+state.priceMax+'"></div>'+
+      '<div class="hint">Subsidio disponible: hasta $122.563.350 (70 SMMLV, 2026)</div>'+
+    '</div>'+
+    '<div class="f-group">'+
+      '<div class="f-title">Área (m²)</div>'+
+      '<div class="range-row"><input type="number" id="f-area-min" min="0" step="100" value="0"><input type="number" id="f-area-max" min="0" step="100" value="'+state.areaMax+'"></div>'+
+    '</div>'+
+    '<div class="f-group">'+
+      '<div class="f-title">Estado</div>'+
+      '<label class="chk"><input type="checkbox" class="f-status" value="good" checked><span class="swatch" style="background:var(--good)"></span>Rural confirmado</label>'+
+      '<label class="chk"><input type="checkbox" class="f-status" value="warning" checked><span class="swatch" style="background:var(--warning)"></span>Con alerta / revisar</label>'+
+    '</div>'+
+    '<div class="f-group">'+
+      '<div class="f-title">Seguimiento</div>'+
+      '<label class="chk"><input type="checkbox" class="f-crm" value="activo" checked><span class="swatch" style="background:var(--info)"></span>Activos</label>'+
+      '<label class="chk"><input type="checkbox" class="f-crm" value="descartado" checked><span class="swatch" style="background:var(--ink-faint)"></span>Descartados</label>'+
+    '</div>'+
+    '<div class="f-group">'+
+      '<div class="f-title">Municipio</div>'+
+      '<div class="link-row"><button class="link-btn" id="muni-all">Todos</button><button class="link-btn" id="muni-none">Ninguno</button></div>'+
+      '<div class="muni-list">'+muniRows+'</div>'+
+    '</div>'+
+    '<button id="reset-filters">Restablecer filtros</button>';
+  }
+
+  function mountFilters(){
+    var html = filtersHTML();
+    document.getElementById('filters-desktop').innerHTML = '<div id="filters">'+html+'</div>';
+    document.getElementById('filters-mount').innerHTML = html.replace(/id="/g,'id="m-');
+    bindFilterEvents(document.getElementById('filters-desktop'));
+    bindFilterEvents(document.getElementById('filters-mount'));
+  }
+
+  function bindFilterEvents(root){
+    var q = root.querySelector('[id$="f-q"]');
+    if(q) q.addEventListener('input', function(){ state.q=this.value; sync(); });
+    var pmin = root.querySelector('[id$="f-price-min"]'), pmax = root.querySelector('[id$="f-price-max"]');
+    if(pmin) pmin.addEventListener('input', function(){ state.priceMin=Number(this.value)||0; sync(); });
+    if(pmax) pmax.addEventListener('input', function(){ state.priceMax=Number(this.value)||DEFAULTS.priceMax; sync(); });
+    var amin = root.querySelector('[id$="f-area-min"]'), amax = root.querySelector('[id$="f-area-max"]');
+    if(amin) amin.addEventListener('input', function(){ state.areaMin=Number(this.value)||0; sync(); });
+    if(amax) amax.addEventListener('input', function(){ state.areaMax=Number(this.value)||DEFAULTS.areaMax; sync(); });
+    root.querySelectorAll('.f-status').forEach(function(cb){
+      cb.addEventListener('change', function(){
+        if(this.checked) state.status.add(this.value); else state.status.delete(this.value);
+        sync();
+      });
+    });
+    root.querySelectorAll('.f-crm').forEach(function(cb){
+      cb.addEventListener('change', function(){
+        if(this.checked) state.crmEstados.add(this.value); else state.crmEstados.delete(this.value);
+        sync();
+      });
+    });
+    root.querySelectorAll('.f-muni').forEach(function(cb){
+      cb.addEventListener('change', function(){
+        if(this.checked) state.municipios.add(this.value); else state.municipios.delete(this.value);
+        sync();
+      });
+    });
+    var all = root.querySelector('[id$="muni-all"]'), none = root.querySelector('[id$="muni-none"]');
+    if(all) all.addEventListener('click', function(){ state.municipios=new Set(municipios); syncAllUIs(); sync(); });
+    if(none) none.addEventListener('click', function(){ state.municipios=new Set(); syncAllUIs(); sync(); });
+    var reset = root.querySelector('[id$="reset-filters"]');
+    if(reset) reset.addEventListener('click', function(){
+      state.q=""; state.priceMin=0; state.priceMax=DEFAULTS.priceMax; state.areaMin=0; state.areaMax=DEFAULTS.areaMax;
+      state.municipios=new Set(municipios); state.status=new Set(["good","warning"]);
+      state.crmEstados=new Set(["activo","descartado"]);
+      mountFilters(); sync();
+    });
+  }
+  function syncAllUIs(){
+    document.querySelectorAll('.f-muni').forEach(function(cb){ cb.checked = state.municipios.has(cb.value); });
+  }
+
+  /* ================= MAP ================= */
+  var STATUS_COLOR = {good:"#3A7D44", warning:"#C07C1F"};
+  var SATELITE = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom:19, opacity:0.85,
+    attribution:'Tiles &copy; Esri'
+  });
+  var map, markersLayer, markerRefs = {};
+
+  function initMap(){
+    map = L.map('map-leaflet', {center:[BOGOTA.lat,BOGOTA.lon], zoom:8, layers:[SATELITE]});
+    L.control.scale({metric:true, imperial:false, position:'bottomright'}).addTo(map);
+
+    var bounds = L.latLngBounds(LOTES.map(function(l){return [l.lat,l.lon];}).concat([[BOGOTA.lat,BOGOTA.lon]]));
+    map.fitBounds(bounds, {padding:[24,24]});
+
+    [50000,100000].forEach(function(radius){
+      L.circle([BOGOTA.lat,BOGOTA.lon], {radius:radius, color:'#3B6EA5', weight:1, dashArray:'3,3', fill:false, opacity:.35, interactive:false}).addTo(map);
+    });
+    L.marker([BOGOTA.lat,BOGOTA.lon], {
+      icon:L.divIcon({className:'', html:'<div style="width:8px;height:8px;background:#000;transform:rotate(45deg);border:1.5px solid #fff;"></div><div class="muni-label" style="margin-top:3px;">Bogotá D.C.</div>', iconSize:[80,24], iconAnchor:[4,4]}),
+      interactive:false
+    }).addTo(map);
+
+    municipios.forEach(function(m){
+      var pts = LOTES.filter(function(l){return l.municipio===m;});
+      var cy = pts.reduce(function(s,p){return s+p.lat;},0)/pts.length;
+      var cx = pts.reduce(function(s,p){return s+p.lon;},0)/pts.length;
+      L.marker([cy,cx], {
+        icon:L.divIcon({className:'', html:'<div class="muni-label">'+esc(m)+'</div>', iconSize:[140,16], iconAnchor:[70,20]}),
+        interactive:false
+      }).addTo(map);
+    });
+
+    markersLayer = L.layerGroup().addTo(map);
+    renderMarkers();
+  }
+
+  function renderMarkers(){
+    markersLayer.clearLayers();
+    markerRefs = {};
+    LOTES.forEach(function(l){
+      var latlng = [l._lat, l._lon];
+      var group = L.layerGroup();
+      if(l.coords_aproximadas){
+        L.circleMarker(latlng, {radius:10, color:'#8C8C91', weight:1, dashArray:'2,2', fill:false, interactive:false}).addTo(group);
+      }
+      if(l.favorito){
+        L.circleMarker(latlng, {radius:13, color:'#8A6A12', weight:2, fill:false, interactive:false}).addTo(group);
+      }
+      var core = L.circleMarker(latlng, {radius:6, color:'#fff', weight:1.4, fillColor:STATUS_COLOR[l.status], fillOpacity:1, opacity:1});
+      core.on('click', function(){ selectLote(l.id); });
+      core.on('mouseover', function(e){ showTooltip(e.originalEvent,l.id); });
+      core.on('mousemove', function(e){ moveTooltip(e.originalEvent); });
+      core.on('mouseout', hideTooltip);
+      core.addTo(group);
+      group.addTo(markersLayer);
+      markerRefs[l.id] = {core:core, group:group};
+    });
+    updateMapDim();
+  }
+
+  function updateMapDim(){
+    Object.keys(markerRefs).forEach(function(idStr){
+      var id = Number(idStr);
+      var l = LOTES.find(function(x){return x.id===id;});
+      var ref = markerRefs[id];
+      var ok = matches(l);
+      var descartado = getCRM(id).estado_crm==='descartado';
+      ref.group.eachLayer(function(layer){ layer.setStyle({opacity: ok?1:.16}); });
+      ref.core.setStyle({
+        radius: state.selected===id ? 7.5 : 6,
+        fillOpacity: !ok ? .16 : (descartado ? .35 : 1)
+      });
+    });
+  }
+
+  function renderLegend(){
+    document.getElementById('legend').innerHTML =
+      '<div class="row"><span class="dot" style="background:var(--good)"></span>Rural confirmado</div>'+
+      '<div class="row"><span class="dot" style="background:var(--warning)"></span>Con alerta / revisar</div>'+
+      '<div class="row"><span style="width:9px;height:9px;border-radius:50%;border:2px solid var(--gold-ink);flex:none;"></span>Favorito ❤️</div>'+
+      '<div class="row"><span style="width:9px;height:9px;border-radius:50%;border:1px dashed var(--ink-muted);flex:none;"></span>Ubicación aproximada</div>';
+  }
+
+  var tt = document.getElementById('tooltip');
+  function showTooltip(e,id){
+    var l = LOTES.find(function(x){return x.id===id;});
+    tt.innerHTML = '<b>'+esc(l.municipio)+(l.vereda?' · '+esc(l.vereda):'')+'</b>'+money(l.precio_cop)+' · '+area(l.area_m2);
+    tt.style.display='block';
+    moveTooltip(e);
+  }
+  function moveTooltip(e){ tt.style.left=(e.clientX+14)+'px'; tt.style.top=(e.clientY+14)+'px'; }
+  function hideTooltip(){ tt.style.display='none'; }
+
+  /* ================= CARDS (tabla bajo el mapa) ================= */
+  function crmCellHTML(id){
+    var c = getCRM(id);
+    var html = '<span class="badge '+c.estado_crm+'">'+ESTADO_CRM_LABEL[c.estado_crm]+'</span>';
+    if(c.contactado) html += ' <span title="Contactado'+(c.fecha_contacto?(' el '+fmtFechaCorta.format(new Date(c.fecha_contacto+"T00:00:00"))):'')+'">📞</span>';
+    if(c.contacto) html += '<div style="font-size:10.5px;color:var(--ink-muted);margin-top:2px;white-space:nowrap;">'+esc(c.contacto)+'</div>';
+    return html;
+  }
+  function serviciosLabel(l){
+    var list = [];
+    if(l.agua) list.push('Agua'+(/pendiente/i.test(l.agua)?' (pendiente)':''));
+    if(l.energia) list.push('Energía'+(/pendiente/i.test(l.energia)?' (pendiente)':''));
+    return list.length ? list.join(', ') : 'No se indican';
+  }
+
+  function renderCardsHead(){
+    document.getElementById('cards-thead').innerHTML =
+      '<th>Municipio / Vereda</th><th class="num-col">Precio</th><th class="num-col">Área</th><th class="num-col">$/m²</th><th>Servicios públicos</th><th>Anunciante</th><th class="num-col">Afinidad</th><th>Estado</th><th>Publicado</th><th>Seguimiento</th>';
+  }
+  function renderCards(){
+    var sorted = LOTES.slice().sort(function(a,b){ return b.afinidad-a.afinidad || (a.precio_cop||Infinity)-(b.precio_cop||Infinity); });
+    document.getElementById('cards-tbody').innerHTML = sorted.map(function(l){
+      var ok = matches(l);
+      return '<tr class="'+(state.selected===l.id?'selected':'')+(ok?'':' dim')+'" data-id="'+l.id+'">'+
+        '<td class="place"><b>'+esc(l.municipio)+'</b><span>'+esc(l.vereda||'—')+'</span></td>'+
+        '<td class="num-col">'+money(l.precio_cop)+'</td>'+
+        '<td class="num-col">'+area(l.area_m2)+'</td>'+
+        '<td class="num-col">'+(l.precio_m2?money(l.precio_m2):'—')+'</td>'+
+        '<td style="font-size:12px;">'+esc(serviciosLabel(l))+'</td>'+
+        '<td style="font-size:12px;">'+esc(l.anunciante||'—')+'</td>'+
+        '<td class="num-col"><span class="badge '+afinidadClass(l.afinidad)+'" title="Qué tan bien cumple los criterios del subsidio (rural, escritura individual, presupuesto, servicios, acceso)">'+l.afinidad+'%</span></td>'+
+        '<td><span class="badge '+l.status+'">'+STATUS_LABEL[l.status]+'</span></td>'+
+        '<td><span class="badge '+l.fresh.cls+'" title="'+esc(l.fresh.label)+'">'+(l.fecha_publicado?fmtFecha.format(new Date(l.fecha_publicado+"T00:00:00")):'sin fecha')+'</span></td>'+
+        '<td>'+crmCellHTML(l.id)+'</td>'+
+        '</tr>';
+    }).join('');
+    document.querySelectorAll('#cards-tbody tr').forEach(function(tr){
+      tr.addEventListener('click', function(){ selectLote(Number(this.getAttribute('data-id'))); });
+    });
+  }
+
+  /* ================= DETAIL ================= */
+  function renderDetail(){
+    var el = document.getElementById('detail');
+    if(state.selected==null){
+      el.innerHTML = '<div class="detail-empty">Selecciona un lote en el mapa o en la tabla para ver el detalle completo (servicios, notas del aviso y estado frente a los criterios del subsidio).</div>';
+      return;
+    }
+    var l = LOTES.find(function(x){return x.id===state.selected;});
+    var crm = getCRM(l.id);
+    var flags = [];
+    flags.push('<span class="badge '+l.status+'">'+STATUS_LABEL[l.status]+'</span>');
+    flags.push('<span class="badge '+l.fresh.cls+'">'+esc(l.fresh.label)+'</span>');
+    flags.push('<span class="badge '+crm.estado_crm+'">'+ESTADO_CRM_LABEL[crm.estado_crm]+'</span>');
+    if(l.favorito) flags.push('<span class="badge fav">❤️ Favorito</span>');
+    if(l.coords_aproximadas) flags.push('<span class="badge unavailable">📍 Ubicación aprox.</span>');
+    var fechaPubStr = l.fecha_publicado ? fmtFecha.format(new Date(l.fecha_publicado+"T00:00:00")) : (l.fecha_texto || "no informada en el aviso");
+    el.innerHTML =
+      '<div class="detail-title">'+esc(l.municipio)+(l.vereda?' · '+esc(l.vereda):'')+'</div>'+
+      '<div class="detail-sub">'+esc(l.titulo||'Sin título de aviso')+'</div>'+
+      '<div class="detail-price">'+money(l.precio_cop)+(l.precio_m2?'<small> · '+money(l.precio_m2)+'/m²</small>':'')+'</div>'+
+      '<div class="afinidad-box"><span class="badge '+afinidadClass(l.afinidad)+'" style="font-size:13px;padding:4px 10px;">'+l.afinidad+'% afinidad al subsidio</span></div>'+
+      '<div class="detail-grid">'+
+        '<div class="detail-item"><div class="l">Área</div><div class="v">'+area(l.area_m2)+'</div></div>'+
+        '<div class="detail-item"><div class="l">Agua</div><div class="v" style="font-size:12.5px;">'+esc(l.agua||'sin dato')+'</div></div>'+
+        '<div class="detail-item"><div class="l">Energía</div><div class="v" style="font-size:12.5px;">'+esc(l.energia||'sin dato')+'</div></div>'+
+        '<div class="detail-item"><div class="l">Acceso</div><div class="v" style="font-size:12.5px;">'+esc(l.acceso||'sin dato')+'</div></div>'+
+      '</div>'+
+      '<div class="detail-flags">'+flags.join('')+'</div>'+
+      '<div class="crm-box">'+
+        '<div class="f-title">Seguimiento (CRM)</div>'+
+        '<div class="crm-row"><label for="crm-contacto">Contacto</label><input type="text" id="crm-contacto" value="'+esc(crm.contacto)+'" placeholder="Nombre del vendedor"></div>'+
+        '<div class="crm-row"><label for="crm-telefono">Teléfono</label><input type="text" id="crm-telefono" value="'+esc(crm.telefono)+'" placeholder="300 000 0000"></div>'+
+        '<label class="chk"><input type="checkbox" id="crm-contactado" '+(crm.contactado?'checked':'')+'>Ya lo contactamos'+(crm.fecha_contacto?' <span style="color:var(--ink-faint);font-weight:400;">('+fmtFechaCorta.format(new Date(crm.fecha_contacto+"T00:00:00"))+')</span>':'')+'</label>'+
+        '<div class="crm-row"><label for="crm-estado">Estado</label><select id="crm-estado">'+
+          '<option value="activo"'+(crm.estado_crm==='activo'?' selected':'')+'>Activo</option>'+
+          '<option value="descartado"'+(crm.estado_crm==='descartado'?' selected':'')+'>Descartado</option>'+
+        '</select></div>'+
+        '<textarea id="crm-notas" placeholder="Notas internas (llamadas, condiciones, avances…)">'+esc(crm.notas_propias)+'</textarea>'+
+      '</div>'+
+      '<div class="detail-notes"><b>Fuente</b>'+
+        '<div class="source-row"><span>Origen</span><span>'+(l.url?'Fincaraíz':'WhatsApp (sin aviso web)')+'</span></div>'+
+        (l.anunciante ? '<div class="source-row"><span>Anunciante</span><span>'+esc(l.anunciante)+'</span></div>' : '')+
+        '<div class="source-row"><span>Publicado</span><span>'+esc(fechaPubStr)+'</span></div>'+
+        '<div class="source-row"><span>Verificado por WEDO ENGINEER</span><span>'+VERIFICADO_TEXTO+'</span></div>'+
+      '</div>'+
+      '<div class="detail-notes"><b>Por qué este estado</b>'+esc(l.statusReason)+'</div>'+
+      (l.notas ? '<div class="detail-notes"><b>Notas del aviso</b>'+esc(l.notas)+'</div>' : '')+
+      (l.url ? '<a class="detail-link" href="'+esc(l.url)+'" target="_blank" rel="noopener">Ver aviso en Fincaraíz ↗</a>' : '<div class="detail-link disabled">Sin aviso web (visto por WhatsApp)</div>');
+
+    document.getElementById('crm-contacto').addEventListener('input', function(){ saveCRM(l.id, {contacto:this.value}); });
+    document.getElementById('crm-telefono').addEventListener('input', function(){ saveCRM(l.id, {telefono:this.value}); });
+    document.getElementById('crm-estado').addEventListener('change', function(){ saveCRM(l.id, {estado_crm:this.value}); renderDetail(); });
+    document.getElementById('crm-notas').addEventListener('input', function(){ saveCRM(l.id, {notas_propias:this.value}); });
+    document.getElementById('crm-contactado').addEventListener('change', function(){
+      saveCRM(l.id, {contactado:this.checked, fecha_contacto: this.checked ? new Date().toISOString().slice(0,10) : null});
+      renderDetail();
+    });
+  }
+
+  function selectLote(id){
+    state.selected = id;
+    renderDetail();
+    updateMapDim();
+    renderCards();
+  }
+
+  /* ================= SYNC ================= */
+  function sync(){
+    var shown = LOTES.filter(matches).length;
+    document.getElementById('count-shown').textContent = shown;
+    var badge = document.getElementById('mobile-count-badge');
+    if(badge) badge.textContent = '('+shown+'/'+LOTES.length+')';
+    updateMapDim();
+    renderCards();
+  }
+
+  /* ================= INIT ================= */
+  mountFilters();
+  initMap();
+  renderLegend();
+  renderCardsHead();
+  renderCards();
+  renderDetail();
+  sync();
+
+})();
+</script>

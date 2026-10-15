@@ -24,4 +24,6 @@ html = html.replace('<link rel="stylesheet" href="styles.css">', '<style>'+css+'
 html = html.replace('<script src="engine.js"></script>', '<script id="projectData" type="application/json">null</script><script>'+engine+'</script>')
 html = html.replace('<script src="app.js"></script>', '<script>'+app+'</script>')
 (root / 'index.html').write_text(html, encoding='utf-8')
+# El sitio publicado (Render) sirve la raíz del repositorio: el simulador va también en ../index.html.
+(root.parent / 'index.html').write_text(html, encoding='utf-8')
 print('HTML autónomo generado:', root / 'index.html')
