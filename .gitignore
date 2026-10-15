@@ -1,0 +1,9 @@
+# Documentos del cliente: nunca se publican (el repositorio es público).
+*.pdf
+*.zip
+*.docx
+# Notas internas de trabajo con datos del cliente y configuración local.
+CLAUDE.md
+solucion/memoria.md
+solucion/CLAUDE.md
+.claude/
